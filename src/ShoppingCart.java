@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -6,6 +7,21 @@ import java.util.Set;
 
 public class ShoppingCart {
     public static void main(String[] args) {
+        ShoppingCartDB cartData = new ShoppingCartDB("cartdb");
+
+        String cartDirectoryPath;
+        if (args.length > 0 ){
+            cartDirectoryPath = args[0];
+        } else {
+            cartDirectoryPath = "db";
+        }
+
+        File cartDirectoryDatabase = new File(cartDirectoryPath);
+        if (!cartDirectoryDatabase.exists()){
+            cartDirectoryDatabase.mkdir();
+        }
+
+
         List<String> shoppingCart = new ArrayList<>();
         Set<String> uniqueShoppingCart = new HashSet<>();
         Scanner scanner = new Scanner(System.in);
@@ -14,8 +30,28 @@ public class ShoppingCart {
         System.out.println("To continue, please input 'list', 'add' or 'remove'. To exit, please enter 'stop'");
         System.out.println(">");
 
+        String username = null;
+
         while (true) {
             String input = scanner.nextLine();
+
+            if (input.startsWith("login")){
+                username = input.substring(6);
+                shoppingCart = cartData.loadShoppingCart(username);
+                System.out.println(username + "'s cart is loaded");
+
+            }
+
+            if (input.equals("save")){
+                if (shoppingCart.isEmpty()) {
+                    System.out.println("Your cart is empty");
+                } else if (username != null){
+                    cartData.saveShoppingCart(username, shoppingCart);
+                    System.out.println(username + "'s Cart is saved");
+                } else {
+                    System.out.println("Please login first");
+                }
+            }
 
             if (input.equals("list")) {
                 if (shoppingCart.size() == 0) {
@@ -24,6 +60,13 @@ public class ShoppingCart {
                     for (int i = 0; i < shoppingCart.size(); i++) {
                         System.out.println((i + 1) + ". " + shoppingCart.get(i));
                     }
+                }
+            }
+
+            if (input.equals("users")){
+                List<String> users = cartData.listUsers();
+                for (String user : users){
+                    System.out.println(user.substring(0, user.indexOf(".")));
                 }
             }
 
