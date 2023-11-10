@@ -11,7 +11,7 @@ public class ShoppingCart {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Welcome to your shopping cart");
-        System.out.println("To continue, please input 'list', 'add' or 'remove'. To exit, please enter 'stop'");
+        System.out.println("To continue, please input 'list', 'add' or 'delete'. To exit, please enter 'stop'");
         System.out.println(">");
 
         while (true) {
