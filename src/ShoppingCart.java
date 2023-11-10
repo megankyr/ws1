@@ -7,60 +7,48 @@ import java.util.Set;
 
 public class ShoppingCart {
     public static void main(String[] args) {
-        ShoppingCartDB cartData = new ShoppingCartDB("cartdb");
 
         String cartDirectoryPath;
         if (args.length > 0) {
             cartDirectoryPath = args[0];
         } else {
             cartDirectoryPath = "db";
+
+            File cartDirectory = new File(cartDirectoryPath);
+            if (!cartDirectory.exists()) {
+                cartDirectory.mkdir();
+            }
         }
 
-        File cartDirectoryDatabase = new File(cartDirectoryPath);
-        if (!cartDirectoryDatabase.exists()) {
-            cartDirectoryDatabase.mkdir();
-        }
-
+        ShoppingCartDB cartDatabase = new ShoppingCartDB(cartDirectoryPath);
         List<String> shoppingCart = new ArrayList<>();
         Set<String> uniqueShoppingCart = new HashSet<>();
+        String currentUsername = null;
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Welcome to your shopping cart");
         System.out.println("To continue, please input 'list', 'add' or 'delete'. To exit, please enter 'stop'");
         System.out.println(">");
 
-        String username = null;
-
         while (true) {
             String input = scanner.nextLine();
 
             if (input.startsWith("login")) {
-                username = input.substring(6);
-                shoppingCart = cartData.loadShoppingCart(username);
-                if (shoppingCart.isEmpty()) {
-                    System.out.println(username + "your cart is empty");
-                } else {
-                    System.out.println(username + "'s cart is loaded");
-
-                }
+                String username = input.substring(6);
+                currentUsername = username;
+                cartDatabase.loadShoppingCart(username, shoppingCart);
             }
 
             if (input.equals("save")) {
-                if (shoppingCart.isEmpty()) {
-                    System.out.println("Your cart is empty");
-                } else if (username != null) {
-                    cartData.saveShoppingCart(username, shoppingCart);
-                    System.out.println(username + "'s Cart is saved");
-                } else {
+                if (currentUsername == null) {
                     System.out.println("Please login first");
+                } else {
+                    cartDatabase.saveShoppingCart(currentUsername, shoppingCart);
                 }
             }
 
             if (input.equals("users")) {
-                List<String> users = cartData.listUsers();
-                for (String user : users) {
-                    System.out.println(user.substring(0, user.indexOf(".")));
-                }
+                cartDatabase.listUsers();
             }
 
             if (input.equals("list")) {

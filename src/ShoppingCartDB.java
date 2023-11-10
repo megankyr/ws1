@@ -1,10 +1,11 @@
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class ShoppingCartDB {
 
@@ -14,53 +15,67 @@ public class ShoppingCartDB {
         this.cartDirectory = cartDirectory;
     }
 
-        public List<String> loadShoppingCart(String username){
-            List<String> shoppingCart = new ArrayList<>();
-            String filePath = cartDirectory + File.separator + username + ".db";
-
-            try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
-                String line;
-                while ((line = reader.readLine()) != null){
-                    shoppingCart.add(line);
-                }
-            } catch (IOException e){
-                    System.out.println("Error found in loading shopping cart");
-                }
-                return shoppingCart;
-
-                br.close();
-
+    public void loadShoppingCart(String username, List<String> shoppingCart) {
+        String cartFilePath = cartDirectory + File.separator + username + ".db";
+        List<String> loadedItems = new ArrayList<>();
+        try (Scanner fileScanner = new Scanner(new File(cartFilePath))) {
+            while (fileScanner.hasNextLine()) {
+                String item = fileScanner.nextLine();
+                loadedItems.add(item);
             }
-
-    public void saveShoppingCart (String username, List<String> shoppingCart){
-        String filePath = cartDirectory + File.separator + username + ".db";
-        try (FileWriter writer = new FileWriter(filePath)){
-            for (String item: shoppingCart){
-                writer.write(item + "\n");
-            }
-        } catch (IOException e){
-            System.out.println("Error found in saving shopping cart");
+        } catch (FileNotFoundException e) {
+            System.out.println(username + ", your cart is empty");
+            shoppingCart.clear();
+            return;
         }
-        fw.flush();
-        fw.close();
+
+        shoppingCart.clear();
+        shoppingCart.addAll(loadedItems);
+
+        if (loadedItems.isEmpty()) {
+            System.out.println(username + ", your cart is empty");
+        } else {
+            System.out.println(username + ", your cart contains the following items:");
+            for (int i = 0; i < loadedItems.size(); i++) {
+                System.out.println((i + 1) + ". " + loadedItems.get(i));
+            }
+        }
+
     }
 
-    public List<String> listUsers(){
+    public void saveShoppingCart(String username, List<String> shoppingCart) {
+        String cartFilePath = cartDirectory + File.separator + username + ".db";
+        try (PrintWriter printWriter = new PrintWriter(new FileWriter(cartFilePath))) {
+            for (String item : shoppingCart) {
+                printWriter.println(item);
+            }
+            System.out.println("Your cart has been saved");
+        } catch (IOException e) {
+            System.err.println("Failed to save cart");
+        }
+    }
+
+    public void listUsers() {
         List<String> users = new ArrayList<>();
-        File directory = new File(cartDirectory);
-
-        if (directory.exists() && directory.isDirectory()){
-            for (File file: directory.listFiles()){
-                if (file.isFile()){
-                    users.add(file.getName());
+        File userDatabase = new File(cartDirectory);
+        File[] files = userDatabase.listFiles();
+        try {
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile() && file.getName().endsWith(".db")) {
+                        users.add(file.getName().replace(".db", ""));
+                    }
                 }
             }
-
+            if (!users.isEmpty()) {
+                System.out.println("The following users are registered");
+                for (int i = 0; i < users.size(); i++) {
+                    System.out.println((i + 1) + ". " + users.get(i));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load users");
         }
-
-        return users;
     }
 
-    }
-
-
+}
