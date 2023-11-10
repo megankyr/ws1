@@ -27,6 +27,9 @@ public class ShoppingCartDB {
                     System.out.println("Error found in loading shopping cart");
                 }
                 return shoppingCart;
+
+                br.close();
+
             }
 
     public void saveShoppingCart (String username, List<String> shoppingCart){
@@ -38,6 +41,8 @@ public class ShoppingCartDB {
         } catch (IOException e){
             System.out.println("Error found in saving shopping cart");
         }
+        fw.flush();
+        fw.close();
     }
 
     public List<String> listUsers(){
